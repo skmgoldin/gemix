@@ -22,7 +22,7 @@ describe('gemix server scan loop', () => {
   // Start the gemix server
   beforeEach(async () => {
     server = spawn('node', ['index.js', '--port', port, '--scanInterval',
-      scanInterval, 'houseAddr', houseAddr], { stdio: ['pipe', 1, 2] });
+      scanInterval, '--houseAddr', houseAddr], { stdio: ['pipe', 1, 2] });
 
     const ping = async () => {
       try {
