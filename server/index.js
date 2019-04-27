@@ -18,8 +18,18 @@ const { port } = gemix;
 server.get('/ping', (req, res) => res.status(200).send('OK'));
 
 server.post('/gemix', (req, res) => {
-  const depositAddr = mixes.newMix(req.body.userAddrs, req.body.ttl);
-  res.send(depositAddr);
+  // Check if the rquest is malformed or missing anything
+  if (req.body.userAddrs === undefined
+    || !Array.isArray(req.body.userAddrs)
+    || req.body.userAddrs.length <= 1) {
+    res.status(400).send();
+  } else {
+    if (req.body.ttl === undefined) {
+      req.body.ttl = 259200; // Three days
+    }
+    const depositAddr = mixes.newMix(req.body.userAddrs, req.body.ttl);
+    res.send(depositAddr);
+  }
 });
 
 server.listen(port, () => console.log(`Gemix server running on port ${port}`));
