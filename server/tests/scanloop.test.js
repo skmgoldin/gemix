@@ -68,20 +68,20 @@ describe('gemix server scan loop', () => {
       amount: depositAmt,
     }, { baseURL: jobcoinApi });
 
+    // Wait for the scan interval to elapse
+    sleep.sleep(scanInterval * 2);
+
     // Get the final balance of the house address
     const houseAddrFinalBalance = parseInt((await axios.get(
       `/crowbar/api/addresses/${houseAddr}`, { baseURL: jobcoinApi },
     ))
       .data.balance, 10);
 
-    // Wait for the scan interval to elapse
-    sleep.sleep(scanInterval * 2);
-
     // The house address' final balance should be its starting balance plus
     // the deposit amount.
     expect(houseAddrFinalBalance)
       .to.be.equal(houseAddrStartingBalance + depositAmt); // eslint-disable-line
-  });
+  }).timeout(5000);
 
   it('uses all user addresses for mixing', async () => {
     const depositAmt = 1;
