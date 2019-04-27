@@ -1,0 +1,12 @@
+{
+  "name": "gemix",
+  "version": "1.0.0",
+  "description": "Gemix is a simple mixer CLI for JobCoin.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mike Goldin <mike.goldin@protonmail.ch>",
+  "license": "Apache-2.0"
+}
+
