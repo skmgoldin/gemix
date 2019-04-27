@@ -46,31 +46,46 @@ describe('ENDPOINT: /gemix', () => {
   });
 
   it('rejects empty mix requests', async () => {
-    const res = await axios.post('/gemix');
-
-    expect(res.status).to.equal(400); // eslint-disable-line
+    try {
+      await axios.post('/gemix');
+      throw new Error();
+    } catch (err) {
+      expect(err.response.status).to.equal(400); // eslint-disable-line
+    }
   });
 
   it('rejects malformed mix requests', async () => {
-    let res = await axios.post('/gemix', { userAddrz: [uuid(), uuid(), uuid()] });
+    try {
+      await axios.post('/gemix', { userAddrz: [uuid(), uuid(), uuid()] });
+      throw new Error();
+    } catch (err) {
+      expect(err.response.status).to.equal(400); // eslint-disable-line
+    }
 
-    expect(res.status).to.equal(400); // eslint-disable-line
-
-    res = await axios.post('/gemix', { userAddrs: uuid() });
-
-    expect(res.status).to.equal(400); // eslint-disable-line
+    try {
+      await axios.post('/gemix', { userAddrs: uuid() });
+      throw new Error();
+    } catch (err) {
+      expect(err.response.status).to.equal(400); // eslint-disable-line
+    }
   });
 
   it('rejects mix requests that provide no user addresses', async () => {
-    const res = await axios.post('/gemix', { userAddrs: [] });
-
-    expect(res.status).to.equal(400); // eslint-disable-line
+    try {
+      await axios.post('/gemix', { userAddrs: [] });
+      throw new Error();
+    } catch (err) {
+      expect(err.response.status).to.equal(400); // eslint-disable-line
+    }
   });
 
   it('rejects mix requests that provide only one user address', async () => {
-    const res = await axios.post('/gemix', { userAddrs: [uuid()] });
-
-    expect(res.status).to.equal(400); // eslint-disable-line
+    try {
+      await axios.post('/gemix', { userAddrs: [uuid()] });
+      throw new Error();
+    } catch (err) {
+      expect(err.response.status).to.equal(400); // eslint-disable-line
+    }
   });
 
   it('returns a deposit addresses when a new mix is requested', async () => {

@@ -85,13 +85,14 @@ describe('gemix server scan loop', () => {
 
   it('uses all user addresses for mixing', async () => {
     const depositAmt = 1;
+    const ttl = 0;
     const addrOne = uuid();
     const addrTwo = uuid();
     const addrThree = uuid();
 
     // Get a new deposit address
     const depositAddr = (await axios.post('/gemix',
-      { userAddrs: [addrOne, addrTwo, addrThree], ttl: 0 }))
+      { userAddrs: [addrOne, addrTwo, addrThree], ttl }))
       .data;
 
     // Make a deposit to the deposit address
@@ -140,7 +141,7 @@ describe('gemix server scan loop', () => {
 
     // Get a new deposit address
     const depositAddr = (await axios.post('/gemix',
-      { userAddrs: [addrOne, addrTwo, addrThree], ttl: 0 }))
+      { userAddrs: [addrOne, addrTwo, addrThree], ttl }))
       .data;
 
     // Make a deposit to the deposit address
