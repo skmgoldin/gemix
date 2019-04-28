@@ -4,7 +4,7 @@ const axios = require('axios');
 const uuid = require('uuid/v4');
 const { expect } = require('chai');
 const LinkedList = require('../LinkedList.js');
-const { getDeposit } = require('../scanloop.js');
+const { getDeposit, scanloop } = require('../scanloop.js');
 
 describe('scanloop', () => {
   const USER = 'Satoshi';
@@ -35,6 +35,7 @@ describe('scanloop', () => {
       ))
         .data.balance);
 
+      // Send user's coins to the deposit address
       await axios.post('http://jobcoin.gemini.com/crowbar/api/transactions', {
         fromAddress: USER,
         toAddress: job.depositAddr,
@@ -49,6 +50,7 @@ describe('scanloop', () => {
       ))
         .data.balance);
 
+      // Get the house's final balance
       const houseFinalBalance = parseFloat((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${houseAddr}`,
       ))
@@ -84,7 +86,51 @@ describe('scanloop', () => {
   });
 
   describe('scanloop', () => {
-    it('mixes users\' coins over all provided addresses');
+    it('mixes users\' coins over all provided addresses', async () => {
+      const depositAmt = 10;
+      const houseAddr = uuid();
+      const outAddrOne = uuid();
+      const outAddrTwo = uuid();
+      const outAddrThree = uuid();
+      const mixJobs = new LinkedList();
+      const job = {
+        status: 'registered',
+        ttl: 0,
+        outAddrs: [outAddrOne, outAddrTwo, outAddrThree],
+        depositAddr: uuid(),
+      };
+      mixJobs.append(job);
+      const time = { now: (() => Date.now()) };
+
+      // Send user's coins to the deposit address
+      await axios.post('http://jobcoin.gemini.com/crowbar/api/transactions', {
+        fromAddress: USER,
+        toAddress: job.depositAddr,
+        amount: depositAmt,
+      });
+
+      await scanloop(mixJobs, houseAddr, time);
+      await scanloop(mixJobs, houseAddr, time);
+      await scanloop(mixJobs, houseAddr, time);
+
+      // Get the final balance of the outAddrs
+      const outAddrOneBal = parseFloat((await axios.get(
+        `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrOne}`,
+      ))
+        .data.balance);
+      const outAddrTwoBal = parseFloat((await axios.get(
+        `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrTwo}`,
+      ))
+        .data.balance);
+      const outAddrThreeBal = parseFloat((await axios.get(
+        `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrThree}`,
+      ))
+        .data.balance);
+
+      expect(outAddrOneBal + outAddrTwoBal + outAddrThreeBal)
+        .to.equal(depositAmt);
+    });
+
     it('mixes users\' coins within the provided ttls');
   });
 });
