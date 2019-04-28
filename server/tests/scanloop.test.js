@@ -102,22 +102,22 @@ describe('gemix server scan loop', () => {
       amount: depositAmt,
     }, { baseURL: jobcoinApi });
 
+    // Wait for the scan interval * the number of addrs + 1 to elapse
+    sleep.sleep(scanInterval * 4);
+
     // Get the balances of the user-provided addresses
-    const addrOneBalance = parseInt((await axios.get(
+    const addrOneBalance = parseFloat((await axios.get(
       `/crowbar/api/addresses/${addrOne}`, { baseURL: jobcoinApi },
     ))
       .data.balance, 10);
-    const addrTwoBalance = parseInt((await axios.get(
+    const addrTwoBalance = parseFloat((await axios.get(
       `/crowbar/api/addresses/${addrTwo}`, { baseURL: jobcoinApi },
     ))
       .data.balance, 10);
-    const addrThreeBalance = parseInt((await axios.get(
+    const addrThreeBalance = parseFloat((await axios.get(
       `/crowbar/api/addresses/${addrThree}`, { baseURL: jobcoinApi },
     ))
       .data.balance, 10);
-
-    // Wait for the scan interval * the number of addrs + 1 to elapse
-    sleep.sleep(scanInterval * 4);
 
     // Each user address should have a balance
     expect(addrOneBalance)
@@ -130,7 +130,7 @@ describe('gemix server scan loop', () => {
     // The sum of deposits in the user addresses should equal the original
     // deposit amount
     expect(addrOneBalance + addrTwoBalance + addrThreeBalance).to.be.equal(depositAmt);
-  });
+  }).timeout(5000);
 
   it('finishes mixing deposits within the specified TTL', async () => {
     const depositAmt = 1;
@@ -151,25 +151,27 @@ describe('gemix server scan loop', () => {
       amount: depositAmt,
     }, { baseURL: jobcoinApi });
 
+    // Wait for the ttl to elapse
+    sleep.sleep(ttl);
+
     // Get the balances of the user-provided addresses
-    const addrOneBalance = parseInt((await axios.get(
+    const addrOneBalance = parseFloat((await axios.get(
       `/crowbar/api/addresses/${addrOne}`, { baseURL: jobcoinApi },
     ))
       .data.balance, 10);
-    const addrTwoBalance = parseInt((await axios.get(
+    const addrTwoBalance = parseFloat((await axios.get(
       `/crowbar/api/addresses/${addrTwo}`, { baseURL: jobcoinApi },
     ))
       .data.balance, 10);
-    const addrThreeBalance = parseInt((await axios.get(
+    const addrThreeBalance = parseFloat((await axios.get(
       `/crowbar/api/addresses/${addrThree}`, { baseURL: jobcoinApi },
     ))
       .data.balance, 10);
 
-    // Wait for the ttl to elapse
-    sleep.sleep(ttl);
-
     // The sum of deposits in the user addresses should equal the original
     // deposit amount
     expect(addrOneBalance + addrTwoBalance + addrThreeBalance).to.be.equal(depositAmt);
-  });
+  }).timeout(15000);
+
+  it('does not crash in the scanloop while the mixes job list is empty');
 });
