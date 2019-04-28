@@ -1,7 +1,8 @@
 const express = require('express');
 const commander = require('commander');
 const bodyParser = require('body-parser');
-const Mixes = require('./mixes.js');
+const uuid = require('uuid/v4');
+const LinkedList = require('./LinkedList.js');
 const scanloop = require('./scanloop.js');
 
 // The mix TTL is the maximum duration (+/- the scan interval) which the service
@@ -15,18 +16,18 @@ commander
   .option('--houseAddr <houseAddr>', 'House address to mix coins in')
   .parse(process.argv);
 
-// mixes is a linked list of active mix jobs. The scanloop iterates over it
+// mixJobs is a linked list of active mix jobs. The scanloop iterates over it
 // periodically and moves nodes through state transitions as it works to
-// complete their mixes. It deletes nodes when mixes are completed, or when they
+// complete their mixJobs. It deletes nodes when jobs are completed, or when they
 // expire without a deposit being made.
-const mixes = new Mixes();
-setInterval(scanloop, commander.scanInterval * 1000, mixes, commander.houseAddr);
+const mixJobs = new LinkedList();
+setInterval(scanloop, commander.scanInterval * 1000, mixJobs, commander.houseAddr);
 
 const server = express();
 server.use(bodyParser.json());
 
 // gemix is the endpoint used for creating a new mix. It adds the mix job to the
-// mixes linked list, and returns a deposit address to the sender.
+// mixJobs linked list, and returns a deposit address to the sender.
 server.post('/gemix', (req, res) => {
   // Check if the request is malformed or missing anything. If it is, return
   // a 400.
@@ -44,8 +45,15 @@ server.post('/gemix', (req, res) => {
 
   // Add this job to the list of mix jobs, and return a deposit address to the
   // sender.
-  const depositAddr = mixes.newMix(req.body.userAddrs, req.body.ttl);
-  res.send(depositAddr);
+  const depositAddr = uuid();
+  const job = {
+    userAddrs: req.body.userAddrs,
+    ttl: req.body.ttl,
+    depositAddr,
+    creationTime: Date.now(),
+  };
+  mixJobs.append(job);
+  res.send(job.depositAddr);
 });
 
 // Just a healthcheck endpoint
