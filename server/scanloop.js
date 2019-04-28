@@ -46,16 +46,21 @@ async function getDeposit(job, houseAddr, time) {
 
 async function mixOut(job, houseAddr, time) {
   if (job.status === 'in-progress'
-    && job.nextMixDate < time.now()
+    && job.nextMixDate <= time.now()
     && job.outAddrs.length > 0) {
-    await axios.post('http://jobcoin.gemini.com/crowbar/api/transactions', {
-      fromAddress: houseAddr,
-      toAddress: job.outAddrs.pop(),
-      amount: job.nextMixAmt,
-    });
+    const outAddr = job.outAddrs.pop();
+    try {
+      await axios.post('http://jobcoin.gemini.com/crowbar/api/transactions', {
+        fromAddress: houseAddr,
+        toAddress: outAddr,
+        amount: job.nextMixAmt,
+      });
+    } catch (err) {
+      job.outAddrs.push(outAddr);
+    }
 
     if (job.outAddrs.length > 0) {
-      prepareNextMixOut(job);
+      prepareNextMixOut(job, time);
     } else {
       job.status = 'prunable';
     }
