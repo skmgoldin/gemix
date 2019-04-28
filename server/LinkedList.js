@@ -16,6 +16,10 @@ function append(node) {
 
 // Provide a function to be applied over all list elements
 function forEach(f) {
+  if (this.head === null) {
+    return;
+  }
+
   const innerForEach = (node) => {
     if (node === this.head) {
       return;
