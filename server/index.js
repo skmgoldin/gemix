@@ -3,11 +3,12 @@ const commander = require('commander');
 const bodyParser = require('body-parser');
 const uuid = require('uuid/v4');
 const LinkedList = require('./LinkedList.js');
-const scanloop = require('./scanloop.js');
+const { scanloop } = require('./scanloop.js');
 
 // The mix TTL is the maximum duration (+/- the scan interval) which the service
 // will take to fully disburse a user's coins.
 const DEFAULT_MIX_TTL = 259200000;
+const MAX_TTL = 604800000;
 
 commander
   .option('--port <port>', 'Port to run the gemix server on')
@@ -21,7 +22,8 @@ commander
 // complete their mixJobs. It deletes nodes when jobs are completed, or when they
 // expire without a deposit being made.
 const mixJobs = new LinkedList();
-setInterval(scanloop, commander.scanInterval * 1000, mixJobs, commander.houseAddr);
+setInterval(scanloop, commander.scanInterval * 1000, mixJobs,
+  commander.houseAddr, { now: (() => Date.now()) });
 
 const server = express();
 server.use(bodyParser.json());
@@ -33,7 +35,8 @@ server.post('/gemix', (req, res) => {
   // a 400.
   if (req.body.userAddrs === undefined
     || !Array.isArray(req.body.userAddrs)
-    || req.body.userAddrs.length <= 1) {
+    || req.body.userAddrs.length <= 1
+    || (req.body.ttl !== undefined && req.body.ttl > MAX_TTL)) {
     res.status(400).send();
     return;
   }
@@ -47,7 +50,8 @@ server.post('/gemix', (req, res) => {
   // sender.
   const depositAddr = uuid();
   const job = {
-    userAddrs: req.body.userAddrs,
+    status: 'registered',
+    outAddrs: req.body.userAddrs,
     ttl: req.body.ttl,
     depositAddr,
     creationTime: Date.now(),

@@ -4,7 +4,7 @@
   "description": "Gemix mixing server",
   "main": "index.js",
   "scripts": {
-    "test": "eslint ./ && mocha ./tests/*"
+    "test": "eslint ./ && mocha ./test/*.test.js"
   },
   "author": "Mike Goldin <mike.goldin@protonmail.ch>",
   "license": "Apache-2.0",
