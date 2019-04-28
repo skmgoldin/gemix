@@ -15,22 +15,25 @@ function append(node) {
 }
 
 // Provide a function to be applied over all list elements
-function forEach(f) {
+async function forEach(f) {
   if (this.head === null) {
     return;
   }
+
+  const promises = [];
 
   const innerForEach = (node) => {
     if (node === this.head) {
       return;
     }
 
-    f(node);
+    promises.push(f(node));
     innerForEach(node.next);
   };
 
-  f(this.head);
+  promises.push(f(this.head));
   innerForEach(this.head.next);
+  await Promise.all(promises);
 }
 
 function LinkedList() {

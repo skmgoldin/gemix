@@ -62,19 +62,19 @@ async function mixOut(job, houseAddr, time) {
   }
 }
 
-function scanloop(mixJobs, houseAddr, time) {
-  mixJobs.forEach(async (job) => {
+async function scanloop(mixJobs, houseAddr, time) {
+  await mixJobs.forEach(async (job) => {
     // The first thing we'll check is if a mix still hasn't received its
     // deposit, whether a deposit has become available to transfer in to the
     // house address.
-    getDeposit(job, houseAddr, time);
+    await getDeposit(job, houseAddr, time);
 
     // Next we'll check if a job still has not received its deposit, and the
     // deposit deadline has passed. If so we'll just delete this mix.
 
     // Next, we'll check if a mix has a release ready. If so, we'll make the
     // release and compute parameters for the next one.
-    mixOut(job, houseAddr, time);
+    await mixOut(job, houseAddr, time);
 
     // If the length of outAddrs is zero, this mix is complete and we can
     // delete it.
