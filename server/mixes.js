@@ -28,19 +28,17 @@ function newMix(userAddrs, ttl) {
 
 // Provide a function to operate asynchronously on all list elements
 function forEach(f) {
-  const { head } = this;
-
-  function innerForEach(node) {
-    if (node === head) {
+  const innerForEach = (node) => {
+    if (node === this.head) {
       return;
     }
 
     f(node);
     innerForEach(node.next);
-  }
+  };
 
-  f(head);
-  innerForEach(head.next);
+  f(this.head);
+  innerForEach(this.head.next);
 }
 
 // Mixes is essentially an interface to a linked list of mix nodes
