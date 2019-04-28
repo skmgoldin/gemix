@@ -66,6 +66,7 @@ describe('scanloop', () => {
   });
 
   describe('mixOut', () => {
+    it('gracefully handles sends of zero');
     it('does not process jobs whose status is not "in-progress"');
     it('does not mix coins before the job\'s next release date');
   });
@@ -100,7 +101,8 @@ describe('scanloop', () => {
         depositAddr: uuid(),
       };
       mixJobs.append(job);
-      const time = { now: (() => Date.now()) };
+      const now = Date.now();
+      const time = { now: (() => now) };
 
       // Send user's coins to the deposit address
       await axios.post('http://jobcoin.gemini.com/crowbar/api/transactions', {
@@ -109,6 +111,7 @@ describe('scanloop', () => {
         amount: depositAmt,
       });
 
+      // We sent in three addresses, so we need to run the scanloop three times
       await scanloop(mixJobs, houseAddr, time);
       await scanloop(mixJobs, houseAddr, time);
       await scanloop(mixJobs, houseAddr, time);
@@ -127,6 +130,9 @@ describe('scanloop', () => {
       ))
         .data.balance);
 
+      expect(outAddrOneBal).to.be.above(0);
+      expect(outAddrTwoBal).to.be.above(0);
+      expect(outAddrThreeBal).to.be.above(0);
       expect(outAddrOneBal + outAddrTwoBal + outAddrThreeBal)
         .to.equal(depositAmt);
     });

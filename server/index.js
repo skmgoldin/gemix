@@ -5,11 +5,15 @@ const uuid = require('uuid/v4');
 const LinkedList = require('./LinkedList.js');
 const { scanloop } = require('./scanloop.js');
 
+const server = express();
+server.use(bodyParser.json());
+
 // The mix TTL is the maximum duration (+/- the scan interval) which the service
 // will take to fully disburse a user's coins.
 const DEFAULT_MIX_TTL = 259200000;
 const MAX_TTL = 604800000;
 
+// This just helps us get CLI options from the user.
 commander
   .option('--port <port>', 'Port to run the gemix server on')
   .option('--scanInterval <scanInterval>',
@@ -18,15 +22,12 @@ commander
   .parse(process.argv);
 
 // mixJobs is a linked list of active mix jobs. The scanloop iterates over it
-// periodically and moves nodes through state transitions as it works to
-// complete their mixJobs. It deletes nodes when jobs are completed, or when they
+// periodically and moves jobs through state transitions as it works to
+// complete them. It deletes jobs when they are completed, or when they
 // expire without a deposit being made.
 const mixJobs = new LinkedList();
 setInterval(scanloop, commander.scanInterval * 1000, mixJobs,
   commander.houseAddr, { now: (() => Date.now()) });
-
-const server = express();
-server.use(bodyParser.json());
 
 // gemix is the endpoint used for creating a new mix. It adds the mix job to the
 // mixJobs linked list, and returns a deposit address to the sender.
