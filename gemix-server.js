@@ -3,7 +3,7 @@ const commander = require('commander');
 const bodyParser = require('body-parser');
 const uuid = require('uuid/v4');
 const LinkedList = require('./gemix-server/LinkedList.js');
-const { scanloop } = require('./gemix-server/scanloop.js');
+const { jobProcessor } = require('./gemix-server/jobProcessor.js');
 
 const server = express();
 server.use(bodyParser.json());
@@ -21,16 +21,16 @@ commander
   .option('--houseAddr <houseAddr>', 'House address to mix coins in')
   .parse(process.argv);
 
-// mixJobs is a linked list of active mix jobs. The scanloop iterates over it
+// jobs is a linked list of active mix jobs. The jobProcessor iterates over it
 // periodically and moves jobs through state transitions as it works to
 // complete them. It deletes jobs when they are completed, or when they
 // expire without a deposit being made.
-const mixJobs = new LinkedList();
-setInterval(scanloop, commander.scanInterval * 1000, mixJobs,
+const jobs = new LinkedList();
+setInterval(jobProcessor, commander.scanInterval * 1000, jobs,
   commander.houseAddr, { now: (() => Date.now()) });
 
 // gemix is the endpoint used for creating a new mix. It adds the mix job to the
-// mixJobs linked list, and returns a deposit address to the sender.
+// jobs linked list, and returns a deposit address to the sender.
 server.post('/gemix', (req, res) => {
   // Check if the request is malformed or missing anything. If it is, return
   // a 400.
@@ -57,7 +57,7 @@ server.post('/gemix', (req, res) => {
     depositAddr,
     creationTime: Date.now(),
   };
-  mixJobs.append(job);
+  jobs.append(job);
 
   // Log some information
   console.log(`[${(new Date(Date.now())).toUTCString()}] Got a new job with ID `

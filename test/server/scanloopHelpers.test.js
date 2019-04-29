@@ -7,9 +7,9 @@ const BN = require('bignumber.js');
 const LinkedList = require('../../gemix-server/LinkedList.js');
 const {
   getDeposit,
-} = require('../../gemix-server/scanloopHelpers.js');
+} = require('../../gemix-server/jobProcessorHelpers.js');
 
-describe('scanloopHelpers', () => {
+describe('jobProcessorHelpers', () => {
   const USER = 'Satoshi';
 
   describe('getDeposit', () => {

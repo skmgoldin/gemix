@@ -5,9 +5,9 @@ const uuid = require('uuid/v4');
 const { expect } = require('chai');
 const BN = require('bignumber.js');
 const LinkedList = require('../../gemix-server/LinkedList.js');
-const { scanloop } = require('../../gemix-server/scanloop.js');
+const { jobProcessor } = require('../../gemix-server/jobProcessor.js');
 
-describe('scanloop', () => {
+describe('jobProcessor', () => {
   const USER = 'Satoshi';
 
   it('mixes users\' coins over all provided addresses', async () => {
@@ -34,10 +34,10 @@ describe('scanloop', () => {
       amount: depositAmt,
     });
 
-    // We sent in three addresses, so we need to run the scanloop three times
-    await scanloop(mixJobs, houseAddr, time);
-    await scanloop(mixJobs, houseAddr, time);
-    await scanloop(mixJobs, houseAddr, time);
+    // We sent in three addresses, so we need to run the jobProcessor three times
+    await jobProcessor(mixJobs, houseAddr, time);
+    await jobProcessor(mixJobs, houseAddr, time);
+    await jobProcessor(mixJobs, houseAddr, time);
 
     // Get the final balance of the outAddrs
     const outAddrOneBal = new BN((await axios.get(
@@ -83,9 +83,9 @@ describe('scanloop', () => {
     });
 
     const now = Date.now();
-    await scanloop(mixJobs, houseAddr, { now: () => now });
-    await scanloop(mixJobs, houseAddr, { now: () => now });
-    await scanloop(mixJobs, houseAddr, { now: () => now });
+    await jobProcessor(mixJobs, houseAddr, { now: () => now });
+    await jobProcessor(mixJobs, houseAddr, { now: () => now });
+    await jobProcessor(mixJobs, houseAddr, { now: () => now });
 
     // Get the intermediate balance of the outAddrs
     let outAddrOneBal = new BN((await axios.get(
@@ -108,10 +108,10 @@ describe('scanloop', () => {
     expect(outAddrTwoBal.toString()).to.equal('0');
     expect(outAddrThreeBal.toString()).to.equal('0');
 
-    // Now run the scanloop 10 seconds in the future, while the TTL is expired
-    await scanloop(mixJobs, houseAddr, { now: () => now + 10000 });
-    await scanloop(mixJobs, houseAddr, { now: () => now + 10000 });
-    await scanloop(mixJobs, houseAddr, { now: () => now + 10000 });
+    // Now run the jobProcessor 10 seconds in the future, while the TTL is expired
+    await jobProcessor(mixJobs, houseAddr, { now: () => now + 10000 });
+    await jobProcessor(mixJobs, houseAddr, { now: () => now + 10000 });
+    await jobProcessor(mixJobs, houseAddr, { now: () => now + 10000 });
 
     // Get the final balance of the outAddrs
     outAddrOneBal = new BN((await axios.get(

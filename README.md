@@ -1,6 +1,8 @@
 # gemix
 The first thing to notice about this implementation of a JobCoin mixer is that the client is very thin. Nearly everything happens in the server. I wanted to move the mixing logic into a server which could manage many mix jobs simultaneously since a mixer with an empty house address isn't really providing any useful obfuscation.
 
+This repo was developed and tested with Node v8.16.0.
+
 # The CLI Client
 
 The CLI client is called `gemix`. It takes an `--api` argument specifying where it can find a mix server, followed by a list of output addresses. It returns a deposit address.
@@ -33,13 +35,13 @@ The server also has a test suite. `npm run test` will invoke it. The address "Sa
 
 The server maintains a linked list of active mix jobs. It adds jobs to the list when users POST to the `/gemix` API. It prunes jobs from the list as they are completed. It also prunes jobs from the list whose ttls expire without receiving deposits.
 
-The core of the mixer server is the scanloop. The scanloop is a function mapped over the list of mix jobs every scan interval. Mix jobs are modeled as state machines which may be "registered", "in-progress", or "prunable". The scanloop progresses mix jobs through states.
+The core of the mixer server is the jobProcessor. The jobProcessor is a function mapped over the list of mix jobs every scan interval. We use an interval since the jobProcessor may invoke calls out to a foreign API (JobCoin), and we want to be friendly by not DOSing it. Mix jobs are modeled as state machines which may be "registered", "in-progress", or "prunable". The jobProcessor progresses mix jobs through states.
 
 Mix jobs which are registered are those for which deposit addresses have been generated, but no deposit has yet been received. Jobs stay in this state until either a deposit is made to their deposit address, bumping them to the in-progress state, or they exceed their ttl, making them prunable.
 
-Jobs which are in-progress remain so while their undisbursed coin balance is greater than zero. In any invocation of the scanloop, an in-progress job may disburse coins to one of its user-provided outAddrs. If the job does make a disbursal in a scanloop invocation, it will also calculate when it should do so again in the future and how many coins it will disburse in that next disbursal. In-progress jobs become prunable once their undisbursed coin balance is zero.
+Jobs which are in-progress remain so while their undisbursed coin balance is greater than zero. In any invocation of the jobProcessor, an in-progress job may disburse coins to one of its user-provided outAddrs. If the job does make a disbursal in a jobProcessor invocation, it will also calculate when it should do so again in the future and how many coins it will disburse in that next disbursal. In-progress jobs become prunable once their undisbursed coin balance is zero.
 
-Jobs which become prunable are deleted in the same invocation of the scanloop.
+Jobs which become prunable are deleted in the same invocation of the jobProcessor.
 
 ## TODOs
 
