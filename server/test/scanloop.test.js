@@ -3,6 +3,7 @@
 const axios = require('axios');
 const uuid = require('uuid/v4');
 const { expect } = require('chai');
+const BN = require('bignumber.js');
 const LinkedList = require('../LinkedList.js');
 const { getDeposit, scanloop } = require('../scanloop.js');
 
@@ -11,7 +12,7 @@ describe('scanloop', () => {
 
   describe('getDeposit', () => {
     it('moves deposits to the house address', async () => {
-      const depositAmt = 1;
+      const depositAmt = new BN(1);
       const houseAddr = uuid();
       const mixJobs = new LinkedList();
       const job = {
@@ -24,13 +25,13 @@ describe('scanloop', () => {
       const time = { now: (() => Date.now()) };
 
       // Get the sending user's starting balance
-      const userStartingBalance = parseFloat((await axios.get(
+      const userStartingBalance = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${USER}`,
       ))
         .data.balance);
 
       // Get the house's starting balance
-      const houseStartingBalance = parseFloat((await axios.get(
+      const houseStartingBalance = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${houseAddr}`,
       ))
         .data.balance);
@@ -45,19 +46,21 @@ describe('scanloop', () => {
       await getDeposit(job, houseAddr, time);
 
       // Get the sending user's final balance
-      const userFinalBalance = parseFloat((await axios.get(
+      const userFinalBalance = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${USER}`,
       ))
         .data.balance);
 
       // Get the house's final balance
-      const houseFinalBalance = parseFloat((await axios.get(
+      const houseFinalBalance = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${houseAddr}`,
       ))
         .data.balance);
 
-      expect(userFinalBalance).to.be.equal(userStartingBalance - depositAmt);
-      expect(houseFinalBalance).to.be.equal(houseStartingBalance + depositAmt);
+      expect(userFinalBalance.toString()).to.be
+        .equal(userStartingBalance.minus(depositAmt).toString());
+      expect(houseFinalBalance.toString()).to.be
+        .equal(houseStartingBalance.plus(depositAmt).toString());
     });
 
     it('sets a job\'s status to "in-progress" after taking its deposit');
@@ -117,28 +120,28 @@ describe('scanloop', () => {
       await scanloop(mixJobs, houseAddr, time);
 
       // Get the final balance of the outAddrs
-      const outAddrOneBal = parseFloat((await axios.get(
+      const outAddrOneBal = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrOne}`,
       ))
         .data.balance);
-      const outAddrTwoBal = parseFloat((await axios.get(
+      const outAddrTwoBal = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrTwo}`,
       ))
         .data.balance);
-      const outAddrThreeBal = parseFloat((await axios.get(
+      const outAddrThreeBal = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrThree}`,
       ))
         .data.balance);
 
-      expect(outAddrOneBal).to.be.above(0);
-      expect(outAddrTwoBal).to.be.above(0);
-      expect(outAddrThreeBal).to.be.above(0);
-      expect(outAddrOneBal + outAddrTwoBal + outAddrThreeBal)
-        .to.equal(depositAmt);
+      expect(outAddrOneBal.toString()).to.not.equal('0');
+      expect(outAddrTwoBal.toString()).to.not.equal('0');
+      expect(outAddrThreeBal.toString()).to.not.equal('0');
+      expect(outAddrOneBal.plus(outAddrTwoBal).plus(outAddrThreeBal).toString())
+        .to.equal(depositAmt.toString());
     });
 
     it('mixes users\' coins within the provided ttls', async () => {
-      const depositAmt = 1;
+      const depositAmt = new BN(1);
       const houseAddr = uuid();
       const outAddrOne = uuid();
       const outAddrTwo = uuid();
@@ -165,15 +168,15 @@ describe('scanloop', () => {
       await scanloop(mixJobs, houseAddr, { now: () => now });
 
       // Get the intermediate balance of the outAddrs
-      let outAddrOneBal = parseFloat((await axios.get(
+      let outAddrOneBal = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrOne}`,
       ))
         .data.balance);
-      let outAddrTwoBal = parseFloat((await axios.get(
+      let outAddrTwoBal = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrTwo}`,
       ))
         .data.balance);
-      let outAddrThreeBal = parseFloat((await axios.get(
+      let outAddrThreeBal = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrThree}`,
       ))
         .data.balance);
@@ -181,9 +184,9 @@ describe('scanloop', () => {
       // They should all be empty. It's technically possible that one could have
       // been filled if the random number generator came up zero on its first
       // run, but extremely unlikely.
-      expect(outAddrOneBal).to.equal(0);
-      expect(outAddrTwoBal).to.equal(0);
-      expect(outAddrThreeBal).to.equal(0);
+      expect(outAddrOneBal.toString()).to.equal('0');
+      expect(outAddrTwoBal.toString()).to.equal('0');
+      expect(outAddrThreeBal.toString()).to.equal('0');
 
       // Now run the scanloop 10 seconds in the future, while the TTL is expired
       await scanloop(mixJobs, houseAddr, { now: () => now + 10000 });
@@ -191,25 +194,25 @@ describe('scanloop', () => {
       await scanloop(mixJobs, houseAddr, { now: () => now + 10000 });
 
       // Get the final balance of the outAddrs
-      outAddrOneBal = parseFloat((await axios.get(
+      outAddrOneBal = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrOne}`,
       ))
         .data.balance);
-      outAddrTwoBal = parseFloat((await axios.get(
+      outAddrTwoBal = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrTwo}`,
       ))
         .data.balance);
-      outAddrThreeBal = parseFloat((await axios.get(
+      outAddrThreeBal = new BN((await axios.get(
         `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrThree}`,
       ))
         .data.balance);
 
       // Everything should be filled and finished.
-      expect(outAddrOneBal).to.be.above(0);
-      expect(outAddrTwoBal).to.be.above(0);
-      expect(outAddrThreeBal).to.be.above(0);
-      expect(outAddrOneBal + outAddrTwoBal + outAddrThreeBal)
-        .to.equal(depositAmt);
+      expect(outAddrOneBal.toString()).to.not.equal('0');
+      expect(outAddrTwoBal.toString()).to.not.equal('0');
+      expect(outAddrThreeBal.toString()).to.not.equal('0');
+      expect(outAddrOneBal.plus(outAddrTwoBal).plus(outAddrThreeBal).toString())
+        .to.equal(depositAmt.toString());
     });
   });
 });
