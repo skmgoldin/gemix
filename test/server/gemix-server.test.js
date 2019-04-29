@@ -19,7 +19,7 @@ describe('index.js (API)', () => {
 
   // Start the gemix server
   before(async () => {
-    server = spawn('node', ['index.js', '--port', port, '--scanInterval',
+    server = spawn('node', ['gemix-server.js', '--port', port, '--scanInterval',
       scanInterval, 'houseAddr', houseAddr], { stdio: ['pipe', 1, 2] });
 
     const ping = async () => {

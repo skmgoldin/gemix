@@ -6,7 +6,7 @@ The first thing to notice about this implementation of a JobCoin mixer is that t
 The CLI client is called `gemix`. It takes an `--api` argument specifying where it can find a mix server, followed by a list of output addresses. It returns a deposit address.
 
 ```
-node gemix.js --api http://localhost:3000 addrOne addrTwo addrThree
+node gemix --api http://localhost:3000 addrOne addrTwo addrThree
 xyz <- Your deposit address
 ```
 
@@ -15,7 +15,7 @@ Optionally, you can specify a `ttl` for your mix job (the default is 30 seconds)
 A mix job with a two minute `ttl`:
 
 ```
-node gemix.js --ttl 120 --api http://localhost:3000 addrOne addrTwo addrThree
+node gemix --ttl 120 --api http://localhost:3000 addrOne addrTwo addrThree
 xyz <- Your deposit address
 ```
 
@@ -24,10 +24,10 @@ xyz <- Your deposit address
 The server takes arguments specifying a port to expose its API on, an interval in seconds between scans of the JobCoin API, and a house address to mix coins in.
 
 ```
-node index.js --port 3000 --scanInterval 10 --houseAddr xyz
+node gemix-server --port 3000 --scanInterval 10 --houseAddr xyz
 ```
 
-The server also has a test suite. From the `server` directory, `npm run test` will invoke it. The address "Satoshi" needs a token balance for the tests to run.
+The server also has a test suite. `npm run test` will invoke it. The address "Satoshi" needs a token balance for the tests to run.
 
 ## Server architecture
 
@@ -46,4 +46,4 @@ Jobs which become prunable are deleted in the same invocation of the scanloop.
 - About half the tests are unimplemented.
 - The mix jobs should be persisted in a database. Without persistence, if the server crashes or goes offline for any reason, people will lose money.
 - The server should be Dockerized and deployed somewhere.
-- Calls to the JobCoin API transferring coins out of the house address and into user outAddrs which fail for any reason are assumed to have failed completely. This won't always be the case, and assuming so could result in users losing money. Nor should it be relied on that API calls which return a 2xx necessarily completed the transfer. More careful state checking there would be good.
+- Calls to the JobCoin API transferring coins out of the house address and into user outAddrs which fail for any reason are assumed to have failed completely. This won't always be the case, and assuming so could result in users losing money. Nor should it be relied on that API calls which return a 2xx necessarily completed the transfer. More careful state checking on transfers in general would be good.

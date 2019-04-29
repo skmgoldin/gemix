@@ -3,7 +3,7 @@
 /* global describe it */
 
 const { expect } = require('chai');
-const LinkedList = require('../LinkedList.js');
+const LinkedList = require('../../gemix-server/LinkedList.js');
 
 describe('LinkedList', () => {
   describe('forEach', () => {

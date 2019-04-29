@@ -2,8 +2,8 @@ const express = require('express');
 const commander = require('commander');
 const bodyParser = require('body-parser');
 const uuid = require('uuid/v4');
-const LinkedList = require('./LinkedList.js');
-const { scanloop } = require('./scanloop.js');
+const LinkedList = require('./gemix-server/LinkedList.js');
+const { scanloop } = require('./gemix-server/scanloop.js');
 
 const server = express();
 server.use(bodyParser.json());

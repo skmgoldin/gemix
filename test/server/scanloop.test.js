@@ -4,8 +4,8 @@ const axios = require('axios');
 const uuid = require('uuid/v4');
 const { expect } = require('chai');
 const BN = require('bignumber.js');
-const LinkedList = require('../LinkedList.js');
-const { scanloop } = require('../scanloop.js');
+const LinkedList = require('../../gemix-server/LinkedList.js');
+const { scanloop } = require('../../gemix-server/scanloop.js');
 
 describe('scanloop', () => {
   const USER = 'Satoshi';

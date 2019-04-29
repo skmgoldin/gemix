@@ -4,10 +4,10 @@ const axios = require('axios');
 const uuid = require('uuid/v4');
 const { expect } = require('chai');
 const BN = require('bignumber.js');
-const LinkedList = require('../LinkedList.js');
+const LinkedList = require('../../gemix-server/LinkedList.js');
 const {
   getDeposit,
-} = require('../scanloopHelpers.js');
+} = require('../../gemix-server/scanloopHelpers.js');
 
 describe('scanloopHelpers', () => {
   const USER = 'Satoshi';

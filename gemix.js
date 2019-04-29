@@ -12,28 +12,18 @@ commander
     + 'http://localhost:3000')
   .parse(process.argv);
 
-let api;
-if (commander.api !== undefined) {
-  api = commander.api;
-} else {
-  api = API_LOC;
-}
-
-let ttl;
-if (commander.ttl !== undefined) {
-  ttl = commander.ttl * 1000;
-} else {
-  ttl = DEFAULT_TTL * 1000;
-}
+const api = commander.api ? commander.api : API_LOC;
+const ttl = commander.ttl ? commander.ttl * 1000 : DEFAULT_TTL * 1000;
 
 async function postMixRequest() {
-  const res = await axios.post(`${api}/gemix`, { userAddrs: commander.args,
-    ttl: ttl });
+  const res = await axios.post(`${api}/gemix`, {
+    userAddrs: commander.args,
+    ttl,
+  });
 
   console.log(`${res.data} <- your deposit address`);
 }
 
 postMixRequest().catch((err) => {
-  console.log('Something went wrong and your request could not be completed');
+  console.log(err.message);
 });
-
