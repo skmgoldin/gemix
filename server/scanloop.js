@@ -95,6 +95,10 @@ async function mixOut(job, houseAddr, time) {
     if (job.outAddrs.length > 0) {
       prepareNextMixOut(job, time);
     } else {
+      // Log some information
+      console.log(`[${(new Date(Date.now())).toUTCString()}] job `
+      + `${job.depositAddr} has become prunable because it finished`);
+
       job.status = 'prunable';
     }
   }
@@ -109,6 +113,14 @@ async function scanloop(mixJobs, houseAddr, time) {
 
     // Next we'll check if a job still has not received its deposit, and the
     // deposit deadline has passed. If so we'll just delete this mix.
+    if (time.now() > job.creationTime + job.ttl && job.status === 'registered') {
+      // Log some information
+      console.log(`[${(new Date(Date.now())).toUTCString()}] job `
+      + `${job.depositAddr} has become prunable because it never received a `
+      + 'deposit');
+
+      job.status = 'prunable';
+    }
 
     // Next, we'll check if a mix has a release ready. If so, we'll make the
     // release and compute parameters for the next one.
@@ -116,6 +128,13 @@ async function scanloop(mixJobs, houseAddr, time) {
 
     // If the length of outAddrs is zero, this mix is complete and we can
     // delete it.
+    if (job.status === 'prunable') {
+      mixJobs.remove(job);
+
+      // Log some information
+      console.log(`[${(new Date(Date.now())).toUTCString()}] job `
+      + `${job.depositAddr} has been pruned`);
+    }
   });
 }
 

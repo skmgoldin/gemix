@@ -14,6 +14,22 @@ function append(node) {
   }
 }
 
+// Remove a node from the list
+function remove(node) {
+  if (node.next === node) {
+    node.next = null;
+    node.prev = null;
+    this.head = null;
+  } else if (this.head === node && node.next !== node) {
+    node.prev.next = node.next;
+    node.next.prev = node.prev;
+    this.head = node.next;
+  } else {
+    node.prev.next = node.next;
+    node.next.prev = node.prev;
+  }
+}
+
 // Provide a function to be applied over all list elements
 async function forEach(f) {
   if (this.head === null) {
@@ -39,6 +55,7 @@ async function forEach(f) {
 function LinkedList() {
   this.head = null;
   this.append = append;
+  this.remove = remove;
   this.forEach = forEach;
 }
 
