@@ -47,6 +47,11 @@ async function getDeposit(job, houseAddr, time) {
         amount: depositAmt.toString(),
       });
 
+      // Log some information
+      console.log(`[${(new Date(Date.now())).toUTCString()}] scooped `
+      + `${depositAmt.toString()} coins to the house address for `
+      + `job ${job.depositAddr}`);
+
       // Update the mix job to reflect its new status
       job.status = 'in-progress';
       job.depositRemaining = depositAmt;

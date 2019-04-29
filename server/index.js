@@ -58,6 +58,11 @@ server.post('/gemix', (req, res) => {
     creationTime: Date.now(),
   };
   mixJobs.append(job);
+
+  // Log some information
+  console.log(`[${(new Date(Date.now())).toUTCString()}] Got a new job with ID `
+  + `${job.depositAddr}`);
+
   res.send(job.depositAddr);
 });
 
