@@ -88,7 +88,7 @@ describe('scanloop', () => {
 
   describe('scanloop', () => {
     it('mixes users\' coins over all provided addresses', async () => {
-      const depositAmt = 10;
+      const depositAmt = 1;
       const houseAddr = uuid();
       const outAddrOne = uuid();
       const outAddrTwo = uuid();
@@ -137,6 +137,79 @@ describe('scanloop', () => {
         .to.equal(depositAmt);
     });
 
-    it('mixes users\' coins within the provided ttls');
+    it('mixes users\' coins within the provided ttls', async () => {
+      const depositAmt = 1;
+      const houseAddr = uuid();
+      const outAddrOne = uuid();
+      const outAddrTwo = uuid();
+      const outAddrThree = uuid();
+      const mixJobs = new LinkedList();
+      const job = {
+        status: 'registered',
+        ttl: 10000, // 10 seconds
+        outAddrs: [outAddrOne, outAddrTwo, outAddrThree],
+        depositAddr: uuid(),
+      };
+      mixJobs.append(job);
+
+      // Send user's coins to the deposit address
+      await axios.post('http://jobcoin.gemini.com/crowbar/api/transactions', {
+        fromAddress: USER,
+        toAddress: job.depositAddr,
+        amount: depositAmt,
+      });
+
+      const now = Date.now();
+      await scanloop(mixJobs, houseAddr, { now: () => now });
+      await scanloop(mixJobs, houseAddr, { now: () => now });
+      await scanloop(mixJobs, houseAddr, { now: () => now });
+
+      // Get the intermediate balance of the outAddrs
+      let outAddrOneBal = parseFloat((await axios.get(
+        `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrOne}`,
+      ))
+        .data.balance);
+      let outAddrTwoBal = parseFloat((await axios.get(
+        `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrTwo}`,
+      ))
+        .data.balance);
+      let outAddrThreeBal = parseFloat((await axios.get(
+        `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrThree}`,
+      ))
+        .data.balance);
+
+      // They should all be empty. It's technically possible that one could have
+      // been filled if the random number generator came up zero on its first
+      // run, but extremely unlikely.
+      expect(outAddrOneBal).to.equal(0);
+      expect(outAddrTwoBal).to.equal(0);
+      expect(outAddrThreeBal).to.equal(0);
+
+      // Now run the scanloop 10 seconds in the future, while the TTL is expired
+      await scanloop(mixJobs, houseAddr, { now: () => now + 10000 });
+      await scanloop(mixJobs, houseAddr, { now: () => now + 10000 });
+      await scanloop(mixJobs, houseAddr, { now: () => now + 10000 });
+
+      // Get the final balance of the outAddrs
+      outAddrOneBal = parseFloat((await axios.get(
+        `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrOne}`,
+      ))
+        .data.balance);
+      outAddrTwoBal = parseFloat((await axios.get(
+        `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrTwo}`,
+      ))
+        .data.balance);
+      outAddrThreeBal = parseFloat((await axios.get(
+        `http://jobcoin.gemini.com/crowbar/api/addresses/${outAddrThree}`,
+      ))
+        .data.balance);
+
+      // Everything should be filled and finished.
+      expect(outAddrOneBal).to.be.above(0);
+      expect(outAddrTwoBal).to.be.above(0);
+      expect(outAddrThreeBal).to.be.above(0);
+      expect(outAddrOneBal + outAddrTwoBal + outAddrThreeBal)
+        .to.equal(depositAmt);
+    });
   });
 });
