@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "bignumber.js": "^8.1.1",
+    "commander": "^2.20.0"
+  },
   "author": "Mike Goldin <mike.goldin@protonmail.ch>",
   "license": "Apache-2.0"
 }
-
