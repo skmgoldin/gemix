@@ -48,9 +48,9 @@ async function getDeposit(job, houseAddr, time) {
       });
 
       // Log some information
-      console.log(`[${(new Date(Date.now())).toUTCString()}] scooped `
-      + `${depositAmt.toString()} coins to the house address for `
-      + `job ${job.depositAddr}`);
+      console.log(`[${(new Date(Date.now())).toUTCString()}] `
+      + `job ${job.depositAddr} scooped ${depositAmt.toString()} coins to the `
+      + 'house address');
 
       // Update the mix job to reflect its new status
       job.status = 'in-progress';
@@ -72,9 +72,9 @@ async function mixOut(job, houseAddr, time) {
     const outAddr = job.outAddrs.pop();
 
     // Log some information
-    console.log(`[${(new Date(Date.now())).toUTCString()}] sending `
-    + `${job.nextMixAmt.toString()} coins to address ${outAddr} for `
-    + `job ${job.depositAddr}`);
+    console.log(`[${(new Date(Date.now())).toUTCString()}] `
+    + `job ${job.depositAddr} sent ${job.nextMixAmt.toString()} coins to `
+    + `address ${outAddr}`);
 
     // Attempt to do the mix, transfering the precomputed outlay to the outAddr.
     // If this fails in any way we'll re-add the outAddr to the stack, recompute
